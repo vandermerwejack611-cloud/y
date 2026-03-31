@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lastic Productions | Jaxx Portfolio</title>
+    <meta name="description" content="Jaxx - WordPress, React & Web Developer. Flexible solutions for rigid problems.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome (Added for Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #f0f0f0;
+            --accent: #ff0055;     /* Primary Pink */
+            --accent-2: #ffcc00;   /* Secondary Yellow */
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --font-display: 'Syncopate', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --easing: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        /* --- RESET & BASE --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+        /* Touch Device Detection */
+        @media (hover: none) and (pointer: coarse) {
+            * { cursor: auto !important; }
+            .cursor-dot, .cursor-outline { display: none !important; }
+            .tilt-card, .magnetic-wrap { transform: none !important; }
+        }
+
+        html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            width: 100%;
+            -webkit-font-smoothing: antialiased;
+            opacity: 0;
+            animation: pageLoad 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes pageLoad { to { opacity: 1; } }
+
+        /* --- CUSTOM CURSOR --- */
+        .cursor-dot, .cursor-outline {
+            position: fixed; top: 0; left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%; z-index: 9999; pointer-events: none;
+            mix-blend-mode: difference;
+        }
+        .cursor-dot { width: 8px; height: 8px; background-color: white; }
+        .cursor-outline { 
+            width: 40px; height: 40px; 
+            border: 1px solid rgba(255,255,255,0.5); 
+            transition: width 0.2s, height 0.2s, background-color 0.2s; 
+        }
+        body.hovering .cursor-outline {
+            width: 60px; height: 60px;
+            background-color: rgba(255, 255, 255, 0.1); 
+            border-color: transparent; 
+            backdrop-filter: blur(2px);
+        }
+
+        /* --- LAYOUT --- */
+        .container { width: 90%; max-width: 1400px; margin: 0 auto; position: relative; z-index: 2; }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%;
+            padding: 1.5rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; 
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: padding 0.3s ease;
+        }
+        nav.scrolled { padding: 1rem 5%; }
+
+        .logo { 
+            font-family: var(--font-display); font-weight: 700; 
+            font-size: clamp(1rem, 4vw, 1.5rem); text-transform: uppercase; 
+            letter-spacing: 2px; user-select: none; white-space: nowrap;
+            color: var(--text-color); text-decoration: none;
+        }
+
+        .nav-wrapper {
+            flex-grow: 1; overflow-x: auto; display: flex; justify-content: flex-end;
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .nav-wrapper::-webkit-scrollbar { display: none; }
+
+        .nav-links { display: flex; gap: clamp(1.5rem, 4vw, 3rem); list-style: none; padding-right: 10px; }
+        .nav-link { 
+            text-decoration: none; color: var(--text-color); font-family: var(--font-body); 
+            font-weight: 500; font-size: clamp(0.7rem, 2vw, 0.9rem); text-transform: uppercase; 
+            letter-spacing: 1px; display: inline-block; transition: color 0.3s; position: relative;
+        }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -5px; left: 0; width: 0%; height: 1px;
+            background: var(--accent); transition: width 0.3s var(--easing);
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        .magnetic-wrap { display: inline-block; transition: transform 0.1s linear; will-change: transform; }
+
+        /* --- HERO --- */
+        header { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; position: relative; padding-top: 15vh; }
+        h1 { font-family: var(--font-display); font-size: clamp(3rem, 15vw, 12rem); line-height: 0.85; text-transform: uppercase; mix-blend-mode: exclusion; opacity: 1; color: white; }
+        .hero-sub { font-size: clamp(0.9rem, 2.5vw, 1.2rem); max-width: 600px; margin-top: 2rem; border-left: 2px solid var(--accent); padding-left: clamp(1rem, 3vw, 1.5rem); line-height: 1.6; color: #ccc; }
+
+        /* --- PROFILE SECTION --- */
+        .profile-section {
+            padding: 4rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        .profile-img-wrapper {
+            /* UPDATED: Larger Size - Min 200px, Fluid 20vw, Max 280px */
+            width: clamp(200px, 20vw, 280px);
+            height: clamp(200px, 20vw, 280px);
+            border-radius: 50%;
+            overflow: hidden;
+            /* UPDATED: Thicker border for larger image */
+            border: 3px solid var(--accent-2);
+            margin-bottom: 2rem;
+            box-shadow: 0 0 40px rgba(255, 204, 0, 0.2);
+            transition: transform 0.3s var(--easing);
+        }
+        .profile-img-wrapper:hover { transform: scale(1.05); }
+        .profile-img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-text { max-width: 800px; font-size: 1.1rem; line-height: 1.6; color: #aaa; }
+        .profile-text strong { color: white; font-weight: 700; }
+
+        /* --- MARQUEE --- */
+        .marquee-section { padding: clamp(2rem, 5vw, 4rem) 0; background: var(--text-color); color: var(--bg-color); transform: rotate(-2deg) scale(1.05); margin: 4rem -5%; width: 110%; overflow: hidden; white-space: nowrap; border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
+        .marquee-content { display: inline-block; animation: marquee 25s linear infinite; }
+        .marquee-text { font-family: var(--font-display); font-size: clamp(2rem, 8vw, 4rem); font-weight: 700; text-transform: uppercase; margin-right: 4rem; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* --- SECTIONS --- */
+        .service-section { padding: clamp(4rem, 10vw, 8rem) 0; border-bottom: 1px solid var(--border-color); position: relative; }
+        .section-header { margin-bottom: clamp(2rem, 5vw, 4rem); display: flex; align-items: baseline; gap: 1rem; }
+        .section-number { font-family: var(--font-display); font-size: clamp(2rem, 6vw, 5rem); opacity: 0.2; color: var(--accent); line-height: 0.8; }
+        .section-title { font-family: var(--font-display); font-size: clamp(1.5rem, 5vw, 3rem); line-height: 1; color: white;}
+
+        /* --- PROJECT CARDS (TILT) --- */
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(1.5rem, 4vw, 3rem); perspective: 1000px; }
+        .project-card {
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;
+            height: clamp(350px, 50vw, 450px); position: relative; transform-style: preserve-3d; 
+            overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 2rem;
+            will-change: transform;
+        }
+        .card-bg-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.5; transition: opacity 0.5s ease, transform 0.6s var(--easing); z-index: 1; }
+        .project-card:hover .card-bg-img { opacity: 0.9; transform: scale(1.1); }
+        .card-glare { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2), transparent 60%); opacity: 0; pointer-events: none; z-index: 2; mix-blend-mode: overlay; transition: opacity 0.2s;}
+        .card-content { position: relative; z-index: 3; transform: translateZ(30px); }
+        .card-title { font-family: var(--font-display); font-size: clamp(1.2rem, 4vw, 1.8rem); margin-bottom: 0.5rem; text-shadow: 0 4px 20px rgba(0,0,0,0.8); }
+        .card-tags { font-family: var(--font-body); font-size: clamp(0.7rem, 2vw, 0.85rem); color: var(--accent-2); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 1rem; }
+        .card-desc { font-size: 0.85rem; color: #ddd; margin-bottom: 1rem; opacity: 0; transform: translateY(10px); transition: all 0.3s ease; line-height: 1.4; }
+        .project-card:hover .card-desc { opacity: 1; transform: translateY(0); }
+        .card-link { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .card-link:hover { color: white; }
+
+        /* --- FLOATING GRID (SKILLS) --- */
+        .floating-grid { display: flex; gap: clamp(1rem, 4vw, 2rem); justify-content: center; flex-wrap: wrap; }
+        .floating-item { 
+            width: clamp(280px, 40vw, 320px); height: 300px; 
+            position: relative; border: 1px solid var(--border-color); 
+            border-radius: 20px; overflow: hidden; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.02);
+            will-change: transform;
+        }
+        .floating-item:nth-child(1) { animation: float 7s ease-in-out infinite; }
+        .floating-item:nth-child(2) { animation: float 8s ease-in-out infinite; animation-delay: 1s; }
+        .floating-item:nth-child(3) { animation: float 9s ease-in-out infinite; animation-delay: 2s; }
+        
+        .floating-item i { font-size: 4rem; color: var(--accent-2); margin-bottom: 1rem; transition: transform 0.3s; }
+        .floating-item:hover i { transform: scale(1.1) rotate(5deg); color: #fff; }
+        .floating-item h4 { font-family: var(--font-display); color: white; font-size: 1.2rem; }
+        .floating-item p { font-size: 0.9rem; color: #888; margin-top: 0.5rem; text-align: center; max-width: 80%; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* --- CONTACT --- */
+        .contact-section { padding: clamp(4rem, 10vw, 8rem) 0; position: relative; }
+        .contact-layout { display: grid; grid-template-columns: 1fr; gap: 4rem; align-items: start; }
+        @media (min-width: 900px) { .contact-layout { grid-template-columns: 1fr 1fr; } }
+
+        .contact-intro h2 { font-family: var(--font-display); font-size: clamp(2rem, 6vw, 4rem); line-height: 1; margin-bottom: 2rem; color: white; }
+        .contact-intro p { font-size: clamp(1rem, 2vw, 1.1rem); line-height: 1.6; color: #888; }
+        
+        .contact-form { display: flex; flex-direction: column; gap: 2.5rem; position: relative; z-index: 5; }
+        .form-group { position: relative; }
+        .form-input, .form-textarea {
+            width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0; color: var(--text-color); font-family: var(--font-body); font-size: 1.1rem;
+            transition: border-color 0.3s, padding-bottom 0.3s; resize: none;
+        }
+        .form-input:focus, .form-textarea:focus { outline: none; border-bottom: 1px solid var(--accent); }
+        .form-input::placeholder, .form-textarea::placeholder { color: #444; font-family: var(--font-display); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; }
+
+        .submit-btn {
+            align-self: flex-start; background: transparent; color: var(--text-color); border: 1px solid var(--accent);
+            padding: 1.2rem 3rem; font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+            font-size: 0.9rem; letter-spacing: 2px; position: relative; overflow: hidden; transition: color 0.4s; margin-top: 1rem; z-index: 10; cursor: none;
+        }
+        .submit-btn::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 0%; height: 100%; background: var(--accent); z-index: -1; transition: width 0.4s var(--easing);
+        }
+        .submit-btn:hover { color: #fff; border-color: var(--accent); }
+        .submit-btn:hover::before { width: 100%; }
+
+        /* --- FOOTER --- */
+        footer { margin-top: 0; padding: 4rem 0; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 3rem; }
+        @media(min-width: 768px) { footer { flex-direction: row; justify-content: space-between; align-items: flex-start; } }
+        .footer-col h3 { font-family: var(--font-display); margin-bottom: 1.5rem; color: white; }
+        .footer-col ul { list-style: none; }
+        .footer-col li { margin-bottom: 1rem; }
+        .footer-col a { color: #888; text-decoration: none; transition: color 0.3s; font-size: 0.9rem; display: inline-block; position: relative; }
+        .footer-col a:hover { color: var(--accent-2); }
+
+        /* --- VISUAL FX --- */
+        .bottom-glow-overlay { position: fixed; bottom: 0; left: 0; width: 100%; height: 100vh; background: radial-gradient(circle at 50% 100%, rgba(255, 0, 85, 0.05), transparent 60%); pointer-events: none; z-index: 0; transition: background 1s ease; }
+        .bottom-light-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 2px; pointer-events: none; z-index: 100; }
+        .bottom-light-beam { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); box-shadow: 0 -5px 30px 10px var(--accent); opacity: 0; transition: all 0.5s ease; }
+
+        /* Canvas */
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6; pointer-events: none; }
+
+        /* --- TOAST --- */
+        .toast {
+            position: fixed; bottom: 30px; right: 30px;
+            background: rgba(20, 20, 20, 0.95);
+            border-left: 4px solid var(--accent-2);
+            color: white; padding: 1rem 1.5rem; border-radius: 4px;
+            display: flex; align-items: center; gap: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.5s var(--easing);
+            z-index: 10000; backdrop-filter: blur(10px);
+            font-family: var(--font-body);
+        }
+        .toast.active { transform: translateY(0); opacity: 1; }
+        .toast-icon { font-family: var(--font-display); color: var(--accent-2); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+
+    <div id="toast" class="toast">
+        <span class="toast-icon">SUCCESS</span>
+        <span class="toast-message">Signal transmitted successfully.</span>
+    </div>
+
+    <div id="canvas-container"></div>
+    <div class="bottom-glow-overlay" id="glow-overlay"></div>
+    <div class="bottom-light-container">
+        <div class="bottom-light-beam" id="bottom-beam"></div>
+    </div>
+
+    <nav id="navbar">
+        <a href="#" class="logo magnetic-area">
+            <div class="magnetic-wrap">L$ PRODUCTIONS</div>
+        </a>
+        <div class="nav-wrapper">
+            <ul class="nav-links">
+                <li class="nav-item magnetic-area"><a href="#profile" class="nav-link magnetic-wrap">Profile</a></li>
+                <li class="nav-item magnetic-area"><a href="#web-dev" class="nav-link magnetic-wrap">Projects</a></li>
+                <li class="nav-item magnetic-area"><a href="#skills" class="nav-link magnetic-wrap">Skills</a></li>
+                <li class="nav-item magnetic-area"><a href="#contact" class="nav-link magnetic-wrap">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header>
+            <h1>lastic<br>Reality</h1>
+            <div class="hero-sub">
+                We stretch the boundaries of digital design. Flexible solutions for rigid problems.
+            </div>
+        </header>
+
+        <!-- PROFILE SECTION -->
+        <section id="profile" class="profile-section">
+            <div class="profile-img-wrapper magnetic-area">
+                <img src="https://z-cdn-media.chatglm.cn/files/00cb7a6b-ccd0-4d06-833b-e845a15b183e_Jack%20Cover%20page-MCPTALYNTYD263_Into%20%281%29.png?auth_key=1862589725-69cebcbb04c34cc89eadf6f4a613a3e7-0-ae012b07a6c537b211a2736af9a4110a" alt="Jaxx Profile" class="profile-img">
+            </div>
+            <div class="profile-text">
+                <p>Hi, I'm <strong>Jaxx</strong>. A versatile developer crafting robust WordPress sites and modern React applications with a strong focus on UI/UX.</p>
+            </div>
+        </section>
+
+        <section class="marquee-section">
+            <div class="marquee-content">
+                <span class="marquee-text">Flexible Systems // Creative Dev // WebGL // Branding // Adaptive Design // </span>
+                <span class="marquee-text">Flexible Systems // Creative Dev // WebGL // Branding // Adaptive Design // </span>
+            </div>
+        </section>
+
+        <!-- SECTION 01: PROJECTS -->
+        <section id="web-dev" class="service-section">
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2 class="section-title">Featured Projects</h2>
+            </div>
+            <div class="projects-grid">
+                <!-- Project 1 -->
+                <article class="project-card tilt-card interactive-el">
+                    <img src="https://z-cdn-media.chatglm.cn/files/d19da032-7008-4c92-99eb-73be4bf8af18_Jack%20Cover%20page-MCPTALYNTYD263_Ecommerce%20Website.png?auth_key=1862588034-77bc5e456e394a738d3618e1bdd2f707-0-5bb608ec9d8c672996173cb69c0b3a20" alt="Phoneboxx" class="card-bg-img" loading="lazy">
+                    <div class="card-glare"></div>
+                    <div class="card-content">
+                        <h3 class="card-title">Phoneboxx</h3>
+                        <p class="card-tags">WordPress / WooCommerce</p>
+                        <p class="card-desc">Fully custom e-commerce platform for mobile accessories with seamless checkout.</p>
+                        <a href="https://phoneboxx.co.za/" target="_blank" class="card-link">Live Preview <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+
+                <!-- Project 2 -->
+                <article class="project-card tilt-card interactive-el">
+                    <img src="https://z-cdn-media.chatglm.cn/files/1c8f131c-0981-4fe7-a344-435c555c3335_Jack%20Cover%20page-MCPTALYNTYD263_Trading%20Website.png?auth_key=1862588108-248c9a047de649a8a35ed606f13f640f-0-6412b106ca18c40bba1943b8d6cca156" alt="Vaultfunder" class="card-bg-img" loading="lazy">
+                    <div class="card-glare"></div>
+                    <div class="card-content">
+                        <h3 class="card-title">Vaultfunder Funnel</h3>
+                        <p class="card-tags">Landing Page / Conversion</p>
+                        <p class="card-desc">High-impact marketing funnel designed for maximum lead generation.</p>
+                        <a href="https://vaultfunder.trade/funnel2" target="_blank" class="card-link">Live Preview <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+
+                <!-- Project 3 -->
+                <article class="project-card tilt-card interactive-el">
+                    <img src="https://z-cdn-media.chatglm.cn/files/1c8f131c-0981-4fe7-a344-435c555c3335_Jack%20Cover%20page-MCPTALYNTYD263_Trading%20Website.png?auth_key=1862588108-248c9a047de649a8a35ed606f13f640f-0-6412b106ca18c40bba1943b8d6cca156" alt="Trade4U" class="card-bg-img" loading="lazy">
+                    <div class="card-glare"></div>
+                    <div class="card-content">
+                        <h3 class="card-title">Trade4U</h3>
+                        <p class="card-tags">Directory / Custom Theme</p>
+                        <p class="card-desc">Comprehensive business directory with advanced search and filtering.</p>
+                        <a href="https://trade4u.co.za/" target="_blank" class="card-link">Live Preview <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+
+                <!-- Project 4 -->
+                <article class="project-card tilt-card interactive-el">
+                    <img src="https://z-cdn-media.chatglm.cn/files/088733f7-7502-4d17-997f-557753445648_Jack%20Cover%20page-MCPTALYNTYD263_Medical%20Website.png?auth_key=1862588155-e6841740c78847848d40b0fa82ea8a7f-0-4407ebad9a06c7001daae9446a24dd23" alt="Medical Insight" class="card-bg-img" loading="lazy">
+                    <div class="card-glare"></div>
+                    <div class="card-content">
+                        <h3 class="card-title">Medical Insight</h3>
+                        <p class="card-tags">Professional / Branding</p>
+                        <p class="card-desc">Trustworthy online presence for medical solutions with clear architecture.</p>
+                        <a href="https://medical-insight-solutions.co.za/" target="_blank" class="card-link">Live Preview <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- SECTION 02: SKILLS -->
+        <section id="skills" class="service-section">
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2 class="section-title">Tech Stack</h2>
+            </div>
+            <div class="floating-grid">
+                <!-- Skill 1 -->
+                <div class="floating-item magnetic-area interactive-el">
+                    <i class="fab fa-wordpress-simple"></i>
+                    <h4>WordPress</h4>
+                    <p>Custom Themes & Plugins</p>
+                </div>
+                <!-- Skill 2 -->
+                <div class="floating-item magnetic-area interactive-el">
+                    <i class="fab fa-react"></i>
+                    <h4>React</h4>
+                    <p>Modern Web Apps</p>
+                </div>
+                <!-- Skill 3 -->
+                <div class="floating-item magnetic-area interactive-el">
+                    <i class="fab fa-figma"></i>
+                    <h4>UI/UX Design</h4>
+                    <p>Figma & Adobe Suite</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact-section">
+            <div class="contact-layout">
+                <div class="contact-intro">
+                    <h2>Start The<br>Conversation</h2>
+                    <p>Ready to mold your digital presence? Fill out the form and I'll get back to you before the ink dries.</p>
+                    <div style="margin-top: 2rem; display: flex; gap: 2rem;">
+                        <a href="#" class="nav-link" style="font-size: 1rem;"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                        <a href="#" class="nav-link" style="font-size: 1rem;"><i class="fab fa-github"></i> GitHub</a>
+                    </div>
+                </div>
+                
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" class="form-input interactive-el" placeholder="Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" class="form-input interactive-el" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-textarea interactive-el" rows="4" placeholder="Message" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn magnetic-area interactive-el">
+                        <span class="magnetic-wrap">Send Signal</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-col">
+                <h3>Lastic Productions</h3>
+                <p style="color: #666; font-size: 0.9rem;">Developed by <strong style="color:white">Jaxx</strong>.<br>Bending pixels.<br>Breaking molds.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Socials</h3>
+                <ul>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Twitter / X</a></li>
+                    <li><a href="#">LinkedIn</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Copyright</h3>
+                <p style="color: #666; font-size: 0.9rem;">&copy; 2024 Jaxx.<br>All Rights Reserved.</p>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // --- CONFIG ---
+        const isTouch = window.matchMedia("(pointer: coarse)").matches;
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => document.querySelectorAll(s);
+        
+        console.log("%c Lastic Productions Init ", "background: #ff0055; color: #fff; padding: 5px; font-weight: bold;");
+
+        // --- TOAST ---
+        function showToast(msg = "Signal transmitted successfully.") {
+            const toast = $('#toast');
+            toast.querySelector('.toast-message').textContent = msg;
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 3000);
+        }
+
+        // --- 1. CURSOR LOGIC ---
+        if (!isTouch) {
+            const cursorDot = $('#cursor-dot');
+            const cursorOutline = $('#cursor-outline');
+            
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX; 
+                const posY = e.clientY;
+                cursorDot.style.left = `${posX}px`; 
+                cursorDot.style.top = `${posY}px`;
+                
+                cursorOutline.animate({
+                    left: `${posX}px`, top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            });
+
+            const interactiveEls = $$('.interactive-el');
+            interactiveEls.forEach(el => {
+                el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+                el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+            });
+        }
+
+        // --- 2. THREE.JS SHADER ---
+        const initThreeJS = () => {
+            const container = $('#canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const uniforms = {
+                u_time: { value: 0.0 },
+                u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                u_mouse: { value: new THREE.Vector2(0, 0) }
+            };
+
+            const fragmentShader = `
+                uniform float u_time; uniform vec2 u_resolution; uniform vec2 u_mouse;
+                vec3 palette( float t ) {
+                    vec3 a = vec3(0.5, 0.5, 0.5);
+                    vec3 b = vec3(0.5, 0.5, 0.5);
+                    vec3 c = vec3(1.0, 1.0, 1.0);
+                    vec3 d = vec3(0.263,0.416,0.557);
+                    return a + b*cos( 6.28318*(c*t+d) );
+                }
+                void main() {
+                    vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / u_resolution.y;
+                    vec2 uv0 = uv; 
+                    vec3 finalColor = vec3(0.0);
+                    uv += (u_mouse * 0.05);
+                    for (float i = 0.0; i < 3.0; i++) {
+                        uv = fract(uv * 1.5) - 0.5;
+                        float d = length(uv) * exp(-length(uv0));
+                        vec3 col = palette(length(uv0) + i*.4 + u_time*.4);
+                        d = sin(d*8. + u_time)/8.; 
+                        d = abs(d); 
+                        d = pow(0.01 / d, 1.2);
+                        finalColor += col * d;
+                    }
+                    gl_FragColor = vec4(finalColor * 0.15, 1.0);
+                }
+            `;
+
+            const material = new THREE.ShaderMaterial({
+                uniforms: uniforms, 
+                fragmentShader: fragmentShader, 
+                vertexShader: `void main() { gl_Position = vec4( position, 1.0 ); }`
+            });
+
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+            scene.add(plane);
+
+            if (!isTouch) {
+                window.addEventListener('mousemove', (e) => {
+                    uniforms.u_mouse.value.x = e.clientX / window.innerWidth;
+                    uniforms.u_mouse.value.y = 1.0 - (e.clientY / window.innerHeight);
+                });
+            }
+
+            const animate = () => {
+                requestAnimationFrame(animate);
+                uniforms.u_time.value += 0.005;
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            window.addEventListener('resize', () => {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                uniforms.u_resolution.value.x = window.innerWidth;
+                uniforms.u_resolution.value.y = window.innerHeight;
+            });
+        };
+        initThreeJS();
+
+        // --- 3. MAGNETIC EFFECTS & TILT ---
+        if (!isTouch) {
+            const magnets = $$('.magnetic-area');
+            magnets.forEach((magnet) => {
+                const content = magnet.querySelector('.magnetic-wrap');
+                if (!content) return;
+                magnet.addEventListener('mousemove', (e) => {
+                    const rect = magnet.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    content.style.transform = `translate(${x * 0.4}px, ${y * 0.4}px)`;
+                });
+                magnet.addEventListener('mouseleave', () => content.style.transform = 'translate(0px, 0px)');
+            });
+
+            const cards = $$('.tilt-card');
+            cards.forEach(card => {
+                const glare = card.querySelector('.card-glare');
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left; 
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2; 
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -8; 
+                    const rotateY = ((x - centerX) / centerX) * 8;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+                    glare.style.opacity = '1';
+                    glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.2), transparent 50%)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+                    glare.style.opacity = '0';
+                });
+            });
+        }
+
+        // --- 4. SCROLL & FORM ---
+        const navbar = $('#navbar');
+        const bottomBeam = $('#bottom-beam');
+        const glowOverlay = $('#glow-overlay');
+        
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            if (scrollY > 50) navbar.classList.add('scrolled');
+            else navbar.classList.remove('scrolled');
+
+            const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercentage = scrollY / scrollTotal;
+            
+            bottomBeam.style.opacity = Math.min(0.3 + (scrollPercentage * 1.5), 1);
+            
+            if (scrollPercentage > 0.6) {
+                bottomBeam.style.background = 'linear-gradient(90deg, transparent, var(--accent-2), transparent)';
+                bottomBeam.style.boxShadow = '0 -10px 40px 10px var(--accent-2)';
+                glowOverlay.style.background = 'radial-gradient(circle at 50% 100%, rgba(255, 204, 0, 0.08), transparent 60%)';
+            } else {
+                bottomBeam.style.background = 'linear-gradient(90deg, transparent, var(--accent), transparent)';
+                bottomBeam.style.boxShadow = '0 -10px 40px 10px var(--accent)';
+                glowOverlay.style.background = 'radial-gradient(circle at 50% 100%, rgba(255, 0, 85, 0.05), transparent 60%)';
+            }
+        });
+
+        const contactForm = $('#contactForm');
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = contactForm.querySelector('button');
+            const originalText = btn.querySelector('span').innerText;
+            
+            btn.querySelector('span').innerText = "Transmitting...";
+            
+            setTimeout(() => {
+                showToast("Message sent successfully.");
+                contactForm.reset();
+                btn.querySelector('span').innerText = originalText;
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
